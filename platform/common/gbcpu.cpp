@@ -216,11 +216,15 @@ int Gameboy::runOpcode(int cycles) {
     int oambugptr = 0xFE08;
     register int totalCycles=0;
 	if (UnknownOpHalt == 1) {
-		//cyclesToExecute = 0;
-		//ime = 0;
+		cycles = 0;
+		totalCycles = 0;
+		ime = 0;
+		halt = 1;
 		emulationPaused = true;
 	}
-
+	else if (UnknownOpHalt == 0) {
+		emulationPaused = false;
+	}
     while (totalCycles < cyclesToExecute)
     {
 #ifdef CPU_DEBUG
@@ -478,7 +482,7 @@ int Gameboy::runOpcode(int cycles) {
 #endif
                 break;
                 // Some games use the stack in exotic ways.
-                // Better to use writeMemory than writeMemory.
+                // Better to use writeMemory than quickWrite.
             case 0xC5:        // PUSH BC            16
 #ifdef SPEEDHAX
                 quickWrite(--locSP, g_gbRegs.bc.b.h);
