@@ -1,3 +1,6 @@
+GameYob-Accurate's initial fork was of Version 0.5. Any subsequent major updates to GameYob will be applied to GameYob-Accurate
+unless doing so would require large amounts of retooling or add regressions. These update applications will be logged here.
+
 Version 0.5:
 
 - Added Gameboy Printer emulation
