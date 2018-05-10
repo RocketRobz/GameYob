@@ -33,9 +33,9 @@ DATA		:=	data
 INCLUDES	:=	include ../common/include
 
 
-APP_TITLE		:= GameYob 3DS `git describe --always --abbrev=4`
-APP_DESCRIPTION := Gameboy & Gameboy Color emulator
-APP_AUTHOR		:= Drenn
+APP_TITLE		:= GameYob-Accurate `git describe --always --abbrev=4`
+APP_DESCRIPTION := Accuracy-oriented GameYob fork
+APP_AUTHOR		:= Orig: Drenn
 APP_ICON		:= $(TOPDIR)/icon.png
 
 
