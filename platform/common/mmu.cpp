@@ -26,39 +26,27 @@ extern "C" {
     memory[0x8] = vram[vramBank]; \
     memory[0x9] = vram[vramBank]+0x1000; }
 #define refreshWramBank() { \
-    if (wramBank == 0) {
-        wramBank = 1;}
-    wramBank = wramBank % 8;
-    memory[0xd] = wram[wramBank]; }
+    if (wramBank == 0) { \
+        wramBank = 1; \
+		} \
+    wramBank = wramBank % 8; \
+    memory[0xd] = wram[wramBank]; } }
 
 void Gameboy::refreshRomBank(int bank) 
 {
-    if (bank < romFile->getNumRomBanks()) {
-        romBank = bank;
-        romFile->loadRomBank(romBank); 
-        memory[0x4] = romFile->romSlot1;
-        memory[0x5] = romFile->romSlot1+0x1000;
-        memory[0x6] = romFile->romSlot1+0x2000;
-        memory[0x7] = romFile->romSlot1+0x3000; 
-    }
-    else
-    {
-        romBank = bank % 64;
-        romFile->loadRomBank(romBank); 
-        memory[0x4] = romFile->romSlot1;
-        memory[0x5] = romFile->romSlot1+0x1000;
-        memory[0x6] = romFile->romSlot1+0x2000;
-        memory[0x7] = romFile->romSlot1+0x3000; 
-    }
+    romBank = bank % romFile->getNumRomBanks();
+    romFile->loadRomBank(romBank); 
+    memory[0x4] = romFile->romSlot1;
+    memory[0x5] = romFile->romSlot1+0x1000;
+    memory[0x6] = romFile->romSlot1+0x2000;
+    memory[0x7] = romFile->romSlot1+0x3000; 
 }
 
 void Gameboy::refreshRamBank (int bank) 
 {
-    if (bank < getNumSramBanks()) {
-        currentRamBank = bank;
-        memory[0xa] = externRam+currentRamBank*0x2000;
-        memory[0xb] = externRam+currentRamBank*0x2000+0x1000; 
-    }
+    currentRamBank = bank % getNumSramBanks();
+    memory[0xa] = externRam+currentRamBank*0x2000;
+    memory[0xb] = externRam+currentRamBank*0x2000+0x1000; 
 }
 
 void Gameboy::writeSram(u16 addr, u8 val) {
@@ -216,11 +204,11 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x0E:
         case 0x13: // NR13, sound frequency low byte 1, all bits set on read
         case 0x15:
-	case 0x18: // NR23, sound frequency low byte 2, all bits set on read
-	case 0x1B: // NR31, sound length 3, all bits set on read
-	case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
-	case 0x1F:
-	case 0x20: // NR41, sound mode/length 4, all bits set on read
+		case 0x18: // NR23, sound frequency low byte 2, all bits set on read
+		case 0x1B: // NR31, sound length 3, all bits set on read
+		case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
+		case 0x1F:
+		case 0x20: // NR41, sound mode/length 4, all bits set on read
         case 0x27: 
         case 0x28:
         case 0x29:
@@ -652,7 +640,7 @@ handleSoundReg:
         case 0x2D:
         case 0x2E:
         case 0x2F:
-	case 0x44:
+		case 0x44:
         case 0x4C: // Undocuented compatibility register. Only readable/writable by GB BIOS. Locked after BIOS disabled.
         case 0x4E:
         case 0x57:
