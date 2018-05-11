@@ -1,4 +1,6 @@
-GameYob-Accurate is a project to increase the accuracy of GameYob in pursuit of a BGB/SameBoy-level DS GBx emulator with no regard to emulation speed. As of now, GameYob-Accurate passes the following blargg accuracy tests:
+GameYob-Accurate is a project to increase the accuracy of GameYob in pursuit of a BGB/SameBoy-level NDS/3DS GBx emulator with no regard to emulation speed. 
+
+As of now, GameYob-Accurate passes the following blargg accuracy tests:
 
 cpu_instrs: All
 cgb_sound: 01, 08, 10
@@ -10,7 +12,7 @@ interrupt_time: None
 mem_timing: None
 mem_timing_2: None
 
-
+I am not maintaining the SDL version but, due to how GameYob was initially set up, the SDL version will receive most of the core updates. My focus is on the DS family's ports.
 
 Readme for the original GameYob:
 
