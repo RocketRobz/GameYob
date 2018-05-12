@@ -90,12 +90,10 @@ struct Registers
     Register hl;
 };
 
-
-
 class Gameboy {
     public:
         // gameboy.cpp
-
+		
         Gameboy();
         ~Gameboy();
         void init();
@@ -181,7 +179,7 @@ class Gameboy {
 
         // variables
         Gameboy* linkedGameboy;
-
+		
         u8 controllers[4];
 
         int doubleSpeed;
@@ -329,7 +327,7 @@ class Gameboy {
         bool biosOn;
 
         // memory[x][yyy] = ram value at xyyy
-        u8* memory[0x10];
+        
 
         u8 vram[2][0x2000];
         u8* externRam;
