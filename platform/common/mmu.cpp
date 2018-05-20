@@ -136,7 +136,6 @@ void Gameboy::initMMU()
 }
 
 void Gameboy::mapMemory() {
-	u8* memory[0x10];
     if (biosOn)
         memory[0x0] = romFile->bios;
     else
