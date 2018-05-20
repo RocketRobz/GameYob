@@ -30,7 +30,7 @@ extern "C" {
         wramBank = 1; \
 		} \
     wramBank = wramBank % 8; \
-    memory[0xd] = wram[wramBank]; }
+    memory[0xd] = wram[wramBank]; } }
 
 void Gameboy::refreshRomBank(int bank) 
 {
@@ -675,13 +675,13 @@ handleSoundReg:
         case 0x70:                // WRAM bank, for CGB only
             if (gbMode == CGB)
             {
-		ioRam[ioReg] = val;
                 refreshWramBank(); 
                 /* The actual register value can be a lot higher 
                 than the total RAM banks in the CGB but the actual
                 BEHAVIOR is what rolls the value around.
                 */
-	    }
+            }
+            ioRam[ioReg] = val;
             return;
         case 0x0F: // IF
             ioRam[ioReg] = val;
