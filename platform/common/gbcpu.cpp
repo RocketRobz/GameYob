@@ -65,7 +65,7 @@ DTCM_DATA
     /* DX */  20,12,16,99,24,16, 8,16,20,16,16,99,24,99, 8,16,
     /* EX */  12,12, 8,99,99,16, 8,16,16, 4,16,99,99,99, 8,16,
     /* FX */  12,12, 8, 4,99,16, 8,16,12, 8,16, 4,99,99, 8,16
-        /* opcodes that have 99 cycles are undefined, but don't hang on them */
+        /* opcodes that have 99 cycles are undefined, hang on them */
 };
 
 const u8 CBopCycles[0x100]
@@ -122,7 +122,7 @@ int Gameboy::handleInterrupts(unsigned int interruptTriggered)
     /* Halt state is always reset */
     halt = 0;
 	if (UnknownOpHalt == 1) {
-		return 0;
+		halt = 1;
 	}
     /* Avoid processing irqs */
     if (!ime) {
@@ -216,7 +216,7 @@ int Gameboy::runOpcode(int cycles) {
     int oambugptr = 0xFE08;
     register int totalCycles=0;
 	if (UnknownOpHalt == 1) {
-		cycles = 0;
+		cyclesToExecute = 0;
 		totalCycles = 0;
 		ime = 0;
 		halt = 1;
@@ -224,6 +224,7 @@ int Gameboy::runOpcode(int cycles) {
 	}
 	else if (UnknownOpHalt == 0) {
 		emulationPaused = false;
+		halt = 0;
 	}
     while (totalCycles < cyclesToExecute)
     {
