@@ -154,8 +154,7 @@ void Gameboy::mapMemory() {
     dmaSource = (ioRam[0x51]<<8) | (ioRam[0x52]);
     dmaSource &= 0xFFF0;
     dmaDest = (ioRam[0x53]<<8) | (ioRam[0x54]);
-    dmaDest &= 0x1FF0;
-}
+    dmaDest &= 0x1FF0;}
 
 u8 Gameboy::readMemoryFast(u16 addr) {
     return memory[addr>>12][addr&0xfff];
@@ -204,11 +203,11 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x0E:
         case 0x13: // NR13, sound frequency low byte 1, all bits set on read
         case 0x15:
-		case 0x18: // NR23, sound frequency low byte 2, all bits set on read
-		case 0x1B: // NR31, sound length 3, all bits set on read
-		case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
-		case 0x1F:
-		case 0x20: // NR41, sound mode/length 4, all bits set on read
+	case 0x18: // NR23, sound frequency low byte 2, all bits set on read
+	case 0x1B: // NR31, sound length 3, all bits set on read
+	case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
+	case 0x1F:
+	case 0x20: // NR41, sound mode/length 4, all bits set on read
         case 0x27: 
         case 0x28:
         case 0x29:
@@ -279,7 +278,7 @@ u8 Gameboy::readMemoryOther(u16 addr) {
     }
     /* Check if in range a000-bfff */
     else if (area == 0xa || area == 0xb) {
-        /* Check if there's an handler for this mbc */
+        /* Check if there's a handler for this mbc */
         if (readFunc != NULL)
             return (*this.*readFunc)(addr);
         else if (!getNumSramBanks())
@@ -419,7 +418,7 @@ void Gameboy::writeIO(u8 ioReg, u8 val) {
         case 0x3F:
 handleSoundReg:
             if (soundDisabled || // If sound is disabled from menu, or
-                    // If sound is globally disabled via shutting down the APU,
+                    // if sound is globally disabled via shutting down the APU,
                     (!(ioRam[0x26] & 0x80)
                      // ignore register writes to between FF10 and FF25 inclusive.
                      && ioReg >= 0x10 && ioReg <= 0x25))
@@ -640,7 +639,7 @@ handleSoundReg:
         case 0x2D:
         case 0x2E:
         case 0x2F:
-		case 0x44:
+	case 0x44:
         case 0x4C: // Undocuented compatibility register. Only readable/writable by GB BIOS. Locked after BIOS disabled.
         case 0x4E:
         case 0x57:
@@ -677,7 +676,7 @@ handleSoundReg:
                 refreshWramBank(); 
                 /* The actual register value can be a lot higher 
                 than the total RAM banks in the CGB but the actual
-                BEHAVIOR is what rolls the value around.
+                BEHAVIOR is what rolls the value back around.
                 */
             }
             ioRam[ioReg] = val;
