@@ -30,7 +30,7 @@ extern "C" {
         wramBank = 1; \
 		} \
     wramBank = wramBank % 8; \
-    memory[0xd] = wram[wramBank]; } }
+    memory[0xd] = wram[wramBank]; }
 
 void Gameboy::refreshRomBank(int bank) 
 {
