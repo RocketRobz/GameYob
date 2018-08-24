@@ -10,7 +10,7 @@
 #include "inputhelper.h"
 #include "gbgfx.h"
 #include "romfile.h"
-#include "io.h"
+//#include "io.h"
 
 #define TO_INT(a) ( (a) >= 'a' ? (a) - 'a' + 10 : (a) >= 'A' ? (a) - 'A' + 10 : (a) - '0')
 
