@@ -12,7 +12,7 @@ interrupt_time: None
 mem_timing: None
 mem_timing_2: None
 
-I am not maintaining the SDL version but, due to how GameYob was initially set up, the SDL version will receive most of the core updates. My focus is on the DS family's ports.
+I am not maintaining the SDL version but, due to how GameYob was initially set up, the SDL version will receive most of the core updates. My focus is on the DS family's ports. If a bug is found and is specific to the SDL version, please report it in the ORIGINAL repo, not this fork.
 
 Readme for the original GameYob:
 
