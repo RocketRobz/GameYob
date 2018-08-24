@@ -173,6 +173,12 @@ u8 Gameboy::readIO(u8 ioReg)
     {
         case 0x00:
             return sgbReadP1();
+        case 0x02:
+            return ioRam[ioReg] | 0x7e;
+        case 0x07:
+            return ioRam[ioReg] | 0xf8;
+        case 0x0F:
+            return ioRam[ioReg] | 0xe0;
         case 0x10: // NR10, sweep register 1, bit 7 set on read
             return ioRam[ioReg] | 0x80;
         case 0x11: // NR11, sound length/pattern duty 1, bits 5-0 set on read
@@ -193,6 +199,8 @@ u8 Gameboy::readIO(u8 ioReg)
             return ioRam[ioReg] | 0xBF;
         case 0x26: // NR52, global sound status, bits 6-4 set on read
             return ioRam[ioReg] | 0x70;
+        case 0x41:
+            return ioRam[ioReg] | 0x80;
         case 0x03:
         case 0x08:
         case 0x09:
@@ -219,7 +227,12 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x2F:
         case 0x46: // This register is used, but write-only. Something something DMA.
         case 0x4C: // Undocuented compatibility register. Only readable/writable by GB BIOS. Locked after BIOS disabled.
+        case 0x4D:
         case 0x4E:
+        case 0x4F:
+        case 0x51:
+        case 0x52:
+        case 0x53:
         case 0x57:
         case 0x58:
         case 0x59:
