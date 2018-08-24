@@ -79,10 +79,7 @@ void Gameboy::init()
                     initGBMode();
                 break;
             case 2: // GBC
-                if (romFile->romSlot0[0x143] == 0x80 || romFile->romSlot0[0x143] == 0xC0)
-                    initGBCMode();
-                else
-                    initGBMode();
+                initGBCMode();
                 break;
         }
 
@@ -98,8 +95,6 @@ void Gameboy::init()
     gbRegs.sp.w = 0xFFFE;
     ime = 0;
     halt = 0;
-	emulationPaused = false;
-	UnknownOpHalt = 0;
     linkedGameboy = NULL;
     memset(controllers, 0xff, sizeof(controllers));
     doubleSpeed = 0;
@@ -224,10 +219,10 @@ void Gameboy::initSND() {
 
 // Called either from startup, or when the BIOS writes to FF50.
 void Gameboy::initGameboyMode() {
-    gbRegs.af.b.l = 0xB0;
-    gbRegs.bc.w = 0x0013;
-    gbRegs.de.w = 0x00D8;
-    gbRegs.hl.w = 0x014D;
+    gbRegs.af.w = 0x1180;
+    gbRegs.bc.w = 0x0000;
+    gbRegs.de.w = 0x0008;
+    gbRegs.hl.w = 0x007D;
     switch(resultantGBMode) {
         case 0: // GB
             gbRegs.af.b.h = 0x01;
@@ -273,8 +268,6 @@ void Gameboy::updateVBlank() {
 
     if (!gbsMode) {
         if (resettingGameboy) {
-			emulationPaused = false;
-			UnknownOpHalt = 0;
             init();
             resettingGameboy = false;
         }
@@ -303,8 +296,6 @@ void Gameboy::updateVBlank() {
 // This function can be called from weird contexts, so just set a flag to deal 
 // with it later.
 void Gameboy::resetGameboy() {
-	emulationPaused = false;
-	UnknownOpHalt = 0;
     resettingGameboy = true;
 }
 
@@ -419,6 +410,8 @@ int Gameboy::runEmul()
         setEventCycles(soundEngine->cyclesToSoundEvent);
 
         emuRet |= updateLCD(cycles);
+        UnknownOpHalt = false;
+        emulationPaused = false;
 
         //interruptTriggered = ioRam[0x0F] & ioRam[0xFF];
         if (interruptTriggered) {

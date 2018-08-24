@@ -112,6 +112,7 @@ void Gameboy::initMMU()
     memset(vram[0], 0, 0x2000);
     memset(vram[1], 0, 0x2000);
 
+    writeIO(0x00, 0xCF);
     writeIO(0x02, 0x00);
     writeIO(0x05, 0x00);
     writeIO(0x06, 0x00);
