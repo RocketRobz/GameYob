@@ -18,7 +18,7 @@ extern "C" {
 #include "console.h"
 #include "menu.h"
 #include "gbs.h"
-#include "timer.h"
+//#include "timer.h"
 #include "romfile.h"
 
 
@@ -233,6 +233,9 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x51:
         case 0x52:
         case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
         case 0x57:
         case 0x58:
         case 0x59:
@@ -250,9 +253,12 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x65:
         case 0x66:
         case 0x67:
+        case 0x68:
+        case 0x6A:
         case 0x6D:
         case 0x6E:
         case 0x6F:
+        case 0x71:
         case 0x78:
         case 0x79:
         case 0x7A:
@@ -262,9 +268,8 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x7E:
         case 0x7F: // Unknown register, but confirmed to be write-only.
             return 0xFF;
-        case 0x70: // wram register
-            return ioRam[ioReg] | 0xf8;
 	case 0x6C:
+        case 0x70:
 	    if (gbMode == CGB) {
 	        return ioRam[ioReg];
 	    } else {
