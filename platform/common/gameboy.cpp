@@ -233,6 +233,10 @@ void Gameboy::initGameboyMode() {
                 initGFXPalette();
             break;
         case 1: // GBC
+            gbRegs.af.w = 0x1170;
+            gbRegs.bc.w = 0x1881;
+            gbRegs.de.w = 0xFFC1;
+            gbRegs.hl.w = 0x0042;
             gbRegs.af.b.h = 0x11;
             if (gbaModeOption)
                 gbRegs.bc.b.h |= 1;
@@ -311,7 +315,10 @@ int Gameboy::runEmul()
         cyclesToEvent -= extraCycles;
         int cycles;
         if (halt)
-            cycles = cyclesToEvent;
+            if (UnknownOpHalt)
+                cycles = -1;
+            else
+                cycles = cyclesToEvent;
         else
             cycles = runOpcode(cyclesToEvent);
 
