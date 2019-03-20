@@ -3,5 +3,5 @@
 
 void printVersionInfo() {
     clearConsole();
-    printf("GameYob %s\n", VERSION_STRING);
+    printf("GameYob-Accurate %s\n", VERSION_STRING);
 }

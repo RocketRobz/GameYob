@@ -2,7 +2,7 @@
 
 export ARM7_MAJOR	:= 0
 export ARM7_MINOR	:= 5
-export ARM7_PATCH	:= 24
+export ARM7_PATCH	:= 26
 
 VERSTRING	:=	$(ARM7_MAJOR).$(ARM7_MINOR).$(ARM7_PATCH)
 #---------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ all : $(BUILD)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
+	@[ -d $@ ] || mkdir $@
 	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile
 
 
@@ -116,7 +116,7 @@ install: all
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).elf  $(TARGET).arm7
+	@del $(BUILD) $(TARGET).elf  $(TARGET).arm7 /f /s /q
 
 
 #---------------------------------------------------------------------------------

@@ -13,3 +13,14 @@ gameyob.nds
 gameyob
 gameyob.ini
 LOG
+platform/ds/build.bat
+original/
+platform/ds/make.log
+platform/ds/make.err
+platform/ds/nbproject/configurations.xml
+platform/ds/nbproject/private/c_standard_headers_indexer.c
+platform/ds/nbproject/private/configurations.xml
+platform/ds/nbproject/private/cpp_standard_headers_indexer.cpp
+platform/ds/nbproject/private/launcher.properties
+platform/ds/nbproject/private/private.xml
+platform/ds/nbproject/project.xml

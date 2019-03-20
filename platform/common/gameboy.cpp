@@ -79,10 +79,7 @@ void Gameboy::init()
                     initGBMode();
                 break;
             case 2: // GBC
-                if (romFile->romSlot0[0x143] == 0x80 || romFile->romSlot0[0x143] == 0xC0)
-                    initGBCMode();
-                else
-                    initGBMode();
+                initGBCMode();
                 break;
         }
 
@@ -98,7 +95,6 @@ void Gameboy::init()
     gbRegs.sp.w = 0xFFFE;
     ime = 0;
     halt = 0;
-
     linkedGameboy = NULL;
     memset(controllers, 0xff, sizeof(controllers));
     doubleSpeed = 0;
@@ -223,10 +219,10 @@ void Gameboy::initSND() {
 
 // Called either from startup, or when the BIOS writes to FF50.
 void Gameboy::initGameboyMode() {
-    gbRegs.af.b.l = 0xB0;
-    gbRegs.bc.w = 0x0013;
-    gbRegs.de.w = 0x00D8;
-    gbRegs.hl.w = 0x014D;
+    gbRegs.af.w = 0x1180;
+    gbRegs.bc.w = 0x0000;
+    gbRegs.de.w = 0x0008;
+    gbRegs.hl.w = 0x007D;
     switch(resultantGBMode) {
         case 0: // GB
             gbRegs.af.b.h = 0x01;
@@ -237,6 +233,10 @@ void Gameboy::initGameboyMode() {
                 initGFXPalette();
             break;
         case 1: // GBC
+            gbRegs.af.w = 0x1170;
+            gbRegs.bc.w = 0x1881;
+            gbRegs.de.w = 0xFFC1;
+            gbRegs.hl.w = 0x0042;
             gbRegs.af.b.h = 0x11;
             if (gbaModeOption)
                 gbRegs.bc.b.h |= 1;
@@ -315,7 +315,10 @@ int Gameboy::runEmul()
         cyclesToEvent -= extraCycles;
         int cycles;
         if (halt)
-            cycles = cyclesToEvent;
+            if (UnknownOpHalt)
+                cycles = -1;
+            else
+                cycles = cyclesToEvent;
         else
             cycles = runOpcode(cyclesToEvent);
 
@@ -414,6 +417,8 @@ int Gameboy::runEmul()
         setEventCycles(soundEngine->cyclesToSoundEvent);
 
         emuRet |= updateLCD(cycles);
+        UnknownOpHalt = false;
+        emulationPaused = false;
 
         //interruptTriggered = ioRam[0x0F] & ioRam[0xFF];
         if (interruptTriggered) {
@@ -488,7 +493,7 @@ void Gameboy::checkLYC() {
 
 inline int Gameboy::updateLCD(int cycles)
 {
-    if (!(ioRam[0x40] & 0x80))		// If LCD is off
+    if (!(ioRam[0x40] & 0x80))        // If LCD is off
     {
         scanlineCounter = 456*(doubleSpeed?2:1);
         ioRam[0x44] = 0;
@@ -624,6 +629,7 @@ inline void Gameboy::updateTimers(int cycles)
         // Reads from [0xff05] may be inaccurate.
         // However Castlevania and Alone in the Dark are extremely slow 
         // if this is updated each time [0xff05] is changed.
+		
         setEventCycles(timerCounter+timerPeriod*(255-ioRam[0x05]));
     }
     dividerCounter -= cycles;
@@ -638,9 +644,10 @@ inline void Gameboy::updateTimers(int cycles)
 
 void Gameboy::requestInterrupt(int id)
 {
-    ioRam[0x0F] |= id;
+    ioRam[0x0F] |= id; 
     interruptTriggered = (ioRam[0x0F] & ioRam[0xFF]);
     if (interruptTriggered)
+		halt = 0;
         cyclesToExecute = -1;
 }
 
@@ -1097,7 +1104,8 @@ int Gameboy::loadState(int stateNum) {
     ramEnabled = state.ramEnabled;
     if (version < 3)
         ramEnabled = true;
-
+	emulationPaused = false;
+	UnknownOpHalt = 0;
     timerPeriod = timerPeriods[ioRam[0x07]&0x3];
     cyclesToEvent = 1;
 

@@ -18,7 +18,7 @@ extern "C" {
 #include "console.h"
 #include "menu.h"
 #include "gbs.h"
-#include "timer.h"
+//#include "timer.h"
 #include "romfile.h"
 
 
@@ -26,31 +26,27 @@ extern "C" {
     memory[0x8] = vram[vramBank]; \
     memory[0x9] = vram[vramBank]+0x1000; }
 #define refreshWramBank() { \
+    if (wramBank == 0) { \
+        wramBank = 1; \
+		} \
+    wramBank = wramBank % 8; \
     memory[0xd] = wram[wramBank]; }
 
 void Gameboy::refreshRomBank(int bank) 
 {
-    if (bank < romFile->getNumRomBanks()) {
-        romBank = bank;
-        romFile->loadRomBank(romBank); 
-        memory[0x4] = romFile->romSlot1;
-        memory[0x5] = romFile->romSlot1+0x1000;
-        memory[0x6] = romFile->romSlot1+0x2000;
-        memory[0x7] = romFile->romSlot1+0x3000; 
-    }
-    else
-        printLog("Tried to access bank %x\n", bank);
+    romBank = bank % romFile->getNumRomBanks();
+    romFile->loadRomBank(romBank); 
+    memory[0x4] = romFile->romSlot1;
+    memory[0x5] = romFile->romSlot1+0x1000;
+    memory[0x6] = romFile->romSlot1+0x2000;
+    memory[0x7] = romFile->romSlot1+0x3000; 
 }
 
 void Gameboy::refreshRamBank (int bank) 
 {
-    if (bank < getNumSramBanks()) {
-        currentRamBank = bank;
-        memory[0xa] = externRam+currentRamBank*0x2000;
-        memory[0xb] = externRam+currentRamBank*0x2000+0x1000; 
-    }
-    else
-        printLog("Tried to access ram bank %x\n", bank);
+    currentRamBank = bank % getNumSramBanks();
+    memory[0xa] = externRam+currentRamBank*0x2000;
+    memory[0xb] = externRam+currentRamBank*0x2000+0x1000; 
 }
 
 void Gameboy::writeSram(u16 addr, u8 val) {
@@ -73,11 +69,10 @@ void Gameboy::initMMU()
 {
     wramBank = 1;
     vramBank = 0;
-
-    dmaSource=0;
-    dmaDest=0;
-    dmaLength=0;
-    dmaMode=0;
+    dmaSource = 0;
+    dmaDest = 0;
+    dmaLength = 0;
+    dmaMode = 0;
 
     ramEnabled = false;
     memoryModel = 0;
@@ -117,6 +112,7 @@ void Gameboy::initMMU()
     memset(vram[0], 0, 0x2000);
     memset(vram[1], 0, 0x2000);
 
+    writeIO(0x00, 0xCF);
     writeIO(0x02, 0x00);
     writeIO(0x05, 0x00);
     writeIO(0x06, 0x00);
@@ -159,15 +155,14 @@ void Gameboy::mapMemory() {
     dmaSource = (ioRam[0x51]<<8) | (ioRam[0x52]);
     dmaSource &= 0xFFF0;
     dmaDest = (ioRam[0x53]<<8) | (ioRam[0x54]);
-    dmaDest &= 0x1FF0;
-}
+    dmaDest &= 0x1FF0;}
 
 u8 Gameboy::readMemoryFast(u16 addr) {
     return memory[addr>>12][addr&0xfff];
 }
 
 u16 Gameboy::readMemory16(u16 addr) {
-    return readMemory(addr) | readMemory(addr+1)<<8;
+        return readMemory(addr) | readMemory(addr+1)<<8;
 }
 
 u8 Gameboy::readIO(u8 ioReg)
@@ -179,41 +174,50 @@ u8 Gameboy::readIO(u8 ioReg)
     {
         case 0x00:
             return sgbReadP1();
+        case 0x02:
+            return ioRam[ioReg] | 0x7e;
+        case 0x07:
+            return ioRam[ioReg] | 0xf8;
+        case 0x0F:
+            return ioRam[ioReg] | 0xe0;
         case 0x10: // NR10, sweep register 1, bit 7 set on read
             return ioRam[ioReg] | 0x80;
         case 0x11: // NR11, sound length/pattern duty 1, bits 5-0 set on read
             return ioRam[ioReg] | 0x3F;
-        case 0x13: // NR13, sound frequency low byte 1, all bits set on read
-            return 0xFF;
         case 0x14: // NR14, sound frequency high byte 1, bits 7,5-0 set on read
             return ioRam[ioReg] | 0xBF;
-        case 0x15: // No register, all bits set on read
-            return 0xFF;
         case 0x16: // NR21, sound length/pattern duty 2, bits 5-0 set on read
             return ioRam[ioReg] | 0x3F;
-        case 0x18: // NR23, sound frequency low byte 2, all bits set on read
-            return 0xFF;
         case 0x19: // NR24, sound frequency high byte 2, bits 7,5-0 set on read
             return ioRam[ioReg] | 0xBF;
         case 0x1A: // NR30, sound mode 3, bits 6-0 set on read
             return ioRam[ioReg] | 0x7F;
-        case 0x1B: // NR31, sound length 3, all bits set on read
-            return 0xFF;
         case 0x1C: // NR32, sound output level 3, bits 7,4-0 set on read
             return ioRam[ioReg] | 0x9F;
-        case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
-            return 0xFF;
         case 0x1E: // NR34, sound frequency high byte 2, bits 7,5-0 set on read
             return ioRam[ioReg] | 0xBF;
-        case 0x1F: // No register, all bits set on read
-            return 0xFF;
-        case 0x20: // NR41, sound mode/length 4, all bits set on read
-            return 0xFF;
         case 0x23: // NR44, sound counter/consecutive, bits 7,5-0 set on read
             return ioRam[ioReg] | 0xBF;
         case 0x26: // NR52, global sound status, bits 6-4 set on read
             return ioRam[ioReg] | 0x70;
-        case 0x27: // No register, all bits set on read
+        case 0x41:
+            return ioRam[ioReg] | 0x80;
+        case 0x03:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x13: // NR13, sound frequency low byte 1, all bits set on read
+        case 0x15:
+	case 0x18: // NR23, sound frequency low byte 2, all bits set on read
+	case 0x1B: // NR31, sound length 3, all bits set on read
+	case 0x1D: // NR33, sound frequency low byte 2, all bits set on read
+	case 0x1F:
+	case 0x20: // NR41, sound mode/length 4, all bits set on read
+        case 0x27: 
         case 0x28:
         case 0x29:
         case 0x2A:
@@ -222,9 +226,62 @@ u8 Gameboy::readIO(u8 ioReg)
         case 0x2D:
         case 0x2E:
         case 0x2F:
+        case 0x46: // This register is used, but write-only. Something something DMA.
+        case 0x4C: // Undocuented compatibility register. Only readable/writable by GB BIOS. Locked after BIOS disabled.
+        case 0x4D:
+        case 0x4E:
+        case 0x4F:
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5A:
+        case 0x5B:
+        case 0x5C:
+        case 0x5D:
+        case 0x5E:
+        case 0x5F:
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x68:
+        case 0x6A:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+        case 0x71:
+        case 0x72:
+        case 0x73:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F: // Unknown register, but confirmed to be write-only.
             return 0xFF;
-        case 0x70: // wram register
-            return ioRam[ioReg] | 0xf8;
+	case 0x6C:
+        case 0x70:
+	    if (gbMode == CGB) {
+	        return ioRam[ioReg];
+	    } else {
+		return 0xFF;
+	    }
         default:
             return ioRam[ioReg];
     }
@@ -239,11 +296,14 @@ u8 Gameboy::readMemoryOther(u16 addr) {
             return readIO(addr&0xff);
         // Check for echo area
         else if (addr < 0xfe00)
+        {
+
             return memory[0xd][addr&0xfff];
+        }
     }
     /* Check if in range a000-bfff */
     else if (area == 0xa || area == 0xb) {
-        /* Check if there's an handler for this mbc */
+        /* Check if there's a handler for this mbc */
         if (readFunc != NULL)
             return (*this.*readFunc)(addr);
         else if (!getNumSramBanks())
@@ -273,7 +333,9 @@ void Gameboy::writeMemoryOther(u16 addr, u8 val) {
                 hram[addr&0x1ff] = val;
             }
             else // Echo area
+            {
                 wram[wramBank][addr&0xFFF] = val;
+            }
             return;
     }
     if (writeFunc != NULL)
@@ -292,9 +354,6 @@ void Gameboy::writeIO(u8 ioReg, u8 val) {
                 refreshP1();
 #endif
             }
-            return;
-        case 0x01:
-            ioRam[ioReg] = val;
             return;
         case 0x02:
             {
@@ -347,16 +406,10 @@ void Gameboy::writeIO(u8 ioReg, u8 val) {
         case 0x04:
             ioRam[ioReg] = 0;
             return;
-        case 0x05:
-            ioRam[ioReg] = val;
-            break;
-        case 0x06:
-            ioRam[ioReg] = val;
-            break;
         case 0x07:
             timerPeriod = timerPeriods[val&0x3];
             ioRam[ioReg] = val;
-            break;
+            return;
         case 0x10:
         case 0x11:
         case 0x12:
@@ -390,11 +443,22 @@ void Gameboy::writeIO(u8 ioReg, u8 val) {
         case 0x3F:
 handleSoundReg:
             if (soundDisabled || // If sound is disabled from menu, or
-                    // If sound is globally disabled via shutting down the APU,
+                    // if sound is globally disabled via shutting down the APU,
                     (!(ioRam[0x26] & 0x80)
                      // ignore register writes to between FF10 and FF25 inclusive.
                      && ioReg >= 0x10 && ioReg <= 0x25))
+					 if (clearedAlready == 0) {
+					 int loopnum = 0x40;
+					 printLog("soundDisabled\n");
+					 while (loopnum != 0x00) {
+						 printLog("Refreshed: %x\n",(loopnum + 0x10));
+						 ioRam[(loopnum + 0x10)] = 0x00;
+						 loopnum--;
+					 }
+					 clearedAlready = 1;
+					 }
                 return;
+			clearedAlready = 0;
             ioRam[ioReg] = val;
             soundEngine->handleSoundRegister(ioReg, val);
             return;
@@ -454,6 +518,7 @@ handleSoundReg:
                 handleVideoRegister(ioReg, val);
             ioRam[ioReg] = val;
             return;
+        
         case 0x69: // CGB BG Palette
             if (isMainGameboy())
                 handleVideoRegister(ioReg, val);
@@ -504,10 +569,6 @@ handleSoundReg:
             ioRam[ioReg] &= 0x7;
             ioRam[ioReg] |= val&0xF8;
             return;
-        case 0x44:
-            //ioRam[0x44] = 0;
-            printLog("LY Write %d\n", val);
-            return;
         case 0x45:
             ioRam[ioReg] = val;
             checkLYC();
@@ -530,7 +591,7 @@ handleSoundReg:
                 vramBank = val & 1;
                 refreshVramBank();
             }
-            ioRam[ioReg] = val&1;
+            ioRam[ioReg] = val & 1;
             return;
             // Special register, used by the gameboy bios
         case 0x50:
@@ -580,15 +641,70 @@ handleSoundReg:
             else
                 ioRam[ioReg] = val;
             return;
-        case 0x70:				// WRAM bank, for CGB only
+        case 0x6c:
+            if (gbMode == CGB)
+                ioRam[ioReg] = val;
+            else
+                return;
+        case 0x03:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x15:
+        case 0x27: 
+        case 0x28:
+        case 0x29:
+        case 0x2A:
+        case 0x2B:
+        case 0x2C:
+        case 0x2D:
+        case 0x2E:
+        case 0x2F:
+	case 0x44:
+        case 0x4C: // Undocuented compatibility register. Only readable/writable by GB BIOS. Locked after BIOS disabled.
+        case 0x4E:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5A:
+        case 0x5B:
+        case 0x5C:
+        case 0x5D:
+        case 0x5E:
+        case 0x5F:
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+            return;
+        case 0x70:                // WRAM bank, for CGB only
             if (gbMode == CGB)
             {
-                wramBank = val & 0x7;
-                if (wramBank == 0)
-                    wramBank = 1;
-                refreshWramBank();
+                refreshWramBank(); 
+                /* The actual register value can be a lot higher 
+                than the total RAM banks in the CGB but the actual
+                BEHAVIOR is what rolls the value back around.
+                */
             }
-            ioRam[ioReg] = val&0x7;
+            ioRam[ioReg] = val;
             return;
         case 0x0F: // IF
             ioRam[ioReg] = val;
@@ -660,6 +776,6 @@ void Gameboy::writeSaveFileSectors(int startSector, int numSectors) {
     devoptab_t* devops = (devoptab_t*)GetDeviceOpTab ("sd");
     PARTITION* partition = (PARTITION*)devops->deviceData;
 
-	_FAT_disc_writeSectors(partition->disc, saveFileSectors[startSector], numSectors, externRam+startSector*fatBytesPerSector);
+    _FAT_disc_writeSectors(partition->disc, saveFileSectors[startSector], numSectors, externRam+startSector*fatBytesPerSector);
 #endif
 }

@@ -10,7 +10,7 @@
 #include "inputhelper.h"
 #include "gbgfx.h"
 #include "romfile.h"
-#include "io.h"
+//#include "io.h"
 
 #define TO_INT(a) ( (a) >= 'a' ? (a) - 'a' + 10 : (a) >= 'A' ? (a) - 'A' + 10 : (a) - '0')
 
@@ -122,7 +122,7 @@ void CheatEngine::unapplyGGCheat(int cheat) {
 }
 
 void CheatEngine::applyGGCheatsToBank(int bank) {
-	u8* bankPtr = romFile->getRomBank(bank);
+    u8* bankPtr = romFile->getRomBank(bank);
     for (int i=0; i<numCheats; i++) {
         if (cheats[i].flags & CHEAT_FLAG_ENABLED && ((cheats[i].flags & CHEAT_FLAG_TYPE_MASK) != CHEAT_FLAG_GAMESHARK)) {
 
